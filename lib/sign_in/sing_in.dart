@@ -1,6 +1,12 @@
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_login/forget_password/forget_password.dart';
 import 'package:firebase_login/sign_up/sign_up.dart';
+import 'package:firebase_login/user_view_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SignInScreen extends StatefulWidget {
   @override
@@ -126,13 +132,36 @@ class _SignInScreenState extends State<SignInScreen> {
                                 ),
                               ),
                               onPressed: () async {
-                                user.get().then((value) {
-                                  value.docs.forEach((e) {
-                                    if(e['email'] == email.text){
-                                      print('success');
-                                    }
-                                  });
-                                });
+                                Fluttertoast.showToast(msg: "Loading...");
+                                final prefs = await SharedPreferences.getInstance();
+                                user.where('email', isEqualTo: email.text)
+                                    .where('password', isEqualTo: password.text)
+                                    .get().then((value) {
+                                      if(value.docs.isNotEmpty){
+                                        log(value.docs.first['name']);
+                                        log(value.docs.first['email']);
+                                        prefs.setString("NAME", value.docs.first['name']);
+                                        prefs.setString("EMAIL", value.docs.first['email']);
+                                        Fluttertoast.showToast(msg: "Success");
+                                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) {
+                                          return UserViewScreen();
+                                        }));
+                                      }else{
+                                       Fluttertoast.showToast(msg: "No Such User");
+                                      }
+                                    });
+                              },
+                            ),
+                          ),
+                          SizedBox(height: 20,),
+                          Container(
+                            alignment: Alignment.bottomCenter,
+                            child: TextButton(
+                              child: Text("Forget Password"),
+                              onPressed: () {
+                                Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) {
+                                  return Forget();
+                                }));
                               },
                             ),
                           ),

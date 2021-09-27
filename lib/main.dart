@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_login/sign_in/sing_in.dart';
+import 'package:firebase_login/user_view_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 bool USE_FIRESTORE_EMULATOR = false;
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,10 +36,18 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
 
   navigation()async{
+    final prefs = await SharedPreferences.getInstance();
     Future.delayed(Duration(milliseconds: 1000),(){
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) {
-        return SignInScreen();
-      }));
+      if(prefs.getString("NAME") != null){
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) {
+          return UserViewScreen();
+        }));
+      }else{
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) {
+          return SignInScreen();
+        }));
+      }
+
     });
   }
 

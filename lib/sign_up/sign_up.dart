@@ -1,5 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_login/user_view_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SignUpScreen extends StatefulWidget {
   @override
@@ -13,7 +16,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
   FirebaseFirestore fireStore = FirebaseFirestore.instance;
   @override
   Widget build(BuildContext context) {
-    CollectionReference user  =  fireStore.collection("users");
     Size size = MediaQuery.of(context).size;
     return Scaffold(
       backgroundColor: Colors.white,
@@ -118,16 +120,24 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               ),
                             ),
                             onPressed: () async {
+                              final prefs = await SharedPreferences.getInstance();
                               if(name.text != '' && email.text != '' && password.text != ''){
                                 FirebaseFirestore.instance
                                     .collection('users')
                                     .add({'name': name.text, 'email': email.text, 'password': password.text}).catchError((e){
                                   print(e.toString());
                                 }).then((value) {
-                                  print('success$value');
+                                  Fluttertoast.showToast(msg: "User Added");
+                                  if(value.id.isNotEmpty){
+                                    prefs.setString("NAME", name.text);
+                                    prefs.setString("EMAIL", email.text);
+                                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) {
+                                      return UserViewScreen();
+                                    }));
+                                  }
                                 });
                               }else{
-
+                                Fluttertoast.showToast(msg: "Failed");
                               }
                             },
                           ),
